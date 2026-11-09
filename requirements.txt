@@ -1,0 +1,13 @@
+pystac-client
+rasterio
+pyproj
+osmnx
+scipy
+numpy
+pandas
+matplotlib
+yfinance
+xlrd
+openpyxl
+lxml
+requests
