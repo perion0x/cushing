@@ -2,8 +2,8 @@ name: Cushing Satellite & Options Scanner
 
 on:
   schedule:
-    # Runs automatically 24/7 every 2 hours
-    - cron: '15 */2 * * *'
+    # Runs every Monday and Thursday at 17:30 UTC
+    - cron: '30 17 * * 1,4'
   workflow_dispatch:
     inputs:
       run_backtest:
