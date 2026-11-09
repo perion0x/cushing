@@ -1,0 +1,61 @@
+name: Cushing Satellite & Options Scanner
+
+on:
+  schedule:
+    # Runs automatically 24/7 every 2 hours
+    - cron: '15 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      run_backtest:
+        description: 'Also run the 4-year Historical Backtest and send to Telegram?'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+permissions:
+  contents: write
+
+jobs:
+  scan_cushing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          pip install pystac-client rasterio pyproj osmnx scipy numpy pandas matplotlib yfinance xlrd openpyxl lxml requests
+
+      - name: Run 24/7 Live Cushing Satellite & Option Pricing Scanner
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
+          FORCE_TELEGRAM: ${{ github.event_name == 'workflow_dispatch' }}
+        run: python cushing_scanner.py
+
+      - name: Run Historical Backtest (Only if Manually Selected)
+        if: ${{ github.event.inputs.run_backtest == 'true' }}
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python cushing_backtest.py
+
+      - name: Save Signal State & Last Telegram Command Offset
+        run: |
+          if git status --porcelain | grep "last_signal_state.json"; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add last_signal_state.json
+            git commit -m "chore: persist Cushing signal state [skip ci]"
+            git push
+          fi
