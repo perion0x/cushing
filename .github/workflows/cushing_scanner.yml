@@ -33,7 +33,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install pystac-client rasterio pyproj osmnx scipy numpy pandas matplotlib yfinance xlrd openpyxl lxml requests
+          pip install -r requirements.txt
 
       - name: Run 24/7 Live Cushing Satellite & Option Pricing Scanner
         env:
