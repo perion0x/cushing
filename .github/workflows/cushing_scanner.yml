@@ -2,8 +2,8 @@ name: Cushing Satellite & Options Scanner
 
 on:
   schedule:
-    # Runs automatically 24/7 every 2 hours
-    - cron: '15 */2 * * *'
+    # Runs every Monday and Thursday at 17:30 UTC
+    - cron: '30 17 * * 1,4'
   workflow_dispatch:
     inputs:
       run_backtest:
@@ -52,10 +52,20 @@ jobs:
 
       - name: Save Signal State & Last Telegram Command Offset
         run: |
-          if git status --porcelain | grep "last_signal_state.json"; then
+          if git status --porcelain | grep -q "last_signal_state.json"; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add last_signal_state.json
             git commit -m "chore: persist Cushing signal state [skip ci]"
-            git push
+            current_branch="$(git rev-parse --abbrev-ref HEAD)"
+            for attempt in 1 2 3; do
+              if git push; then
+                break
+              fi
+              if [ "$attempt" -eq 3 ]; then
+                echo "Failed to push last_signal_state.json after retries."
+                exit 1
+              fi
+              git pull --rebase --autostash origin "$current_branch"
+            done
           fi
