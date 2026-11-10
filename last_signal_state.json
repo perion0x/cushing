@@ -1,6 +1,6 @@
 {
-  "sat_scene_id": "S2B_14SPE_20261104_0_L2A",
+  "sat_scene_id": "S2C_14SPE_20261109_0_L2A",
   "eia_date": "2026-10-30",
-  "signal_regime": "HIGH_CONVICTION_BUILD",
+  "signal_regime": "NOISE_FLOOR_HOLD",
   "last_update_id": 861413042
 }
